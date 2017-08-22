@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <gtest/gtest.h>
 #include "../sha1.h"
 
 static void ToHashStr (char* dst, const unsigned char* src, size_t src_len) {
@@ -16,7 +15,13 @@ static void ToHashStr (char* dst, const unsigned char* src, size_t src_len) {
 inline void CompareHash (const unsigned char* digest, const char* hashStr) {
   char hashStrCmp[SHA_DIGEST_LENGTH * 2 + 1];
   ToHashStr (hashStrCmp, digest, SHA_DIGEST_LENGTH);
-  EXPECT_STREQ (hashStr, hashStrCmp);
+  if(hashStr == hashStrCmp)
+  {
+    std::cout << "Hash string matched!\n";
+  } else {
+    std::cerr << "Hash string does not match!\n";
+    std::cout << "hashStr: " << hashStr << ", hashStrCmp: " << hashStrCmp << "\n";
+  }
 }
 
 inline void CompareHashAnyOf (const unsigned char* digest, const char* const hashStr[], size_t nHashStr) {
@@ -27,7 +32,12 @@ inline void CompareHashAnyOf (const unsigned char* digest, const char* const has
       return;
   }
   // No match found. Compare to first hash so as to produce a grepable failure.
-  EXPECT_STREQ (hashStr[0], hashStrCmp);
+  if(hashStr[0] == hashStrCmp)
+  {
+    std::cout << "Hash string matched!\n";
+  } else {
+    std::cerr << "Hash string does not match!\n";
+  }
 }
 
 #endif //__HASHFUNCTIONS_H__
