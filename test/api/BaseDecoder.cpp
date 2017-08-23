@@ -19,7 +19,9 @@ static void ReadFrame(std::istream* stream, BufferedData* buf) {
   for (;;) {
     stream->read (&b, 1);
     if (stream->gcount() != 1) { // end of stream
+#ifdef _DEBUG_MODE_
       std::cout << "reached the end of stream!\n";
+#endif
       return;
     }
     //std::cout << "read one byte: " << (int)b << "\n";
@@ -123,10 +125,13 @@ void BaseDecoder::DecodeFrame (const uint8_t* src, size_t sliceSize, DecoderList
 
   DECODING_STATE rv = decoder_->DecodeFrameNoDelay (src, (int) sliceSize, data, &bufInfo);
   assert (rv == dsErrorFree);
+#ifdef _DEBUG_MODE_
   std::cout << "finished decoding, bufInfo.iBufferStatus: " << (int)bufInfo.iBufferStatus << ", cbk: " << cbk << "\n";
-
+#endif
   if (bufInfo.iBufferStatus == 1 && cbk != NULL) {
-    std::cout << "will invoke callback\n";
+#ifdef _DEBUG_MODE_
+      std::cout << "will invoke callback\n";
+#endif
     const Frame frame = {
       {
         // y plane
@@ -164,7 +169,9 @@ static unsigned long getTimeStamp(BufferedData * bufPtr)
   std::string timestampStr((const char *)timestamp, Timestamp_Length); // need to init by '0'
   timestampStr.erase(
       0, timestampStr.find_first_not_of('0')); // remove preceeding '0's
+#ifdef _DEBUG_MODE_
   std::cout << "Timestamp: " << timestampStr << "\n";
+#endif
   return std::stoul(timestampStr);
 }
 
