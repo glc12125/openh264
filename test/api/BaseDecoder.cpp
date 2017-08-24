@@ -3,6 +3,7 @@
 #include <istream>
 #include <iostream>
 #include <cassert>
+#include <sys/time.h>
 #include "codec_def.h"
 #include "codec_app_def.h"
 #include "utils/BufferedData.h"
@@ -116,8 +117,21 @@ void BaseDecoder::TearDown() {
   }
 }
 
+#ifdef _DEBUG_MODE_
+namespace {
+    static unsigned long counter = 0;
+    static double meanTime = 0.0;
+    static struct timeval tv;
+    static unsigned long timestamp, last_timestamp;
+} // End of anonymous namespace
+#endif
 
 void BaseDecoder::DecodeFrame (const uint8_t* src, size_t sliceSize, DecoderListener::Callback* cbk) {
+#ifdef _DEBUG_MODE_
+  gettimeofday(&tv, NULL);
+  last_timestamp = tv.tv_sec * 1e6 + tv.tv_usec;
+#endif
+
   uint8_t* data[3];
   SBufferInfo bufInfo;
   memset (data, 0, sizeof (data));
@@ -157,6 +171,16 @@ void BaseDecoder::DecodeFrame (const uint8_t* src, size_t sliceSize, DecoderList
     };
     cbk->onDecodeFrame (data, &bufInfo, lastTimestamp_);
   }
+#ifdef _DEBUG_MODE_
+    gettimeofday(&tv, NULL);
+    timestamp = tv.tv_sec * 1e6 + tv.tv_usec;
+    auto diff = timestamp - last_timestamp;
+    std::cout << "Single time used for decoding: " << diff << "\n";
+    meanTime = meanTime + ((double)diff - meanTime)/((double)counter + 1);
+    std::cout << "Current AVG Time used for decoding a frame: " << meanTime << "\n";
+    ++counter;
+#endif
+
 }
 
 namespace {
